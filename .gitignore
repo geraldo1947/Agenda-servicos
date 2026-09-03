@@ -1,0 +1,19 @@
+# Ambiente virtual
+.venv/
+venv/
+
+# Banco de dados local (cada um gera o seu com o migrate)
+db.sqlite3
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+
+# IDE
+.idea/
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db

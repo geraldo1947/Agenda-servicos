@@ -1,0 +1,52 @@
+/* Reaplica a paleta de salao (vinho + dourado) no admin do Django.
+   So sobrescreve as variaveis que o proprio admin ja expoe em base.css —
+   nao mexe no layout nem na estrutura, so na cor e na tipografia. */
+
+:root,
+html[data-theme="light"] {
+    --primary: #7C3248;
+    --secondary: #2B2320;
+    --accent: #A9793E;
+    --primary-fg: #fff;
+
+    --body-fg: #2B2320;
+    --body-bg: #FBF8F5;
+    --body-quiet-color: #7A6F68;
+    --body-medium-color: #4A423D;
+    --body-loud-color: #000;
+
+    --header-color: #F3E3E6;
+    --header-branding-color: var(--accent);
+    --header-bg: var(--secondary);
+    --header-link-color: var(--primary-fg);
+
+    --breadcrumbs-fg: #E7DFD9;
+    --breadcrumbs-bg: #3d332e;
+
+    --link-fg: #7C3248;
+    --link-hover-color: #5E2537;
+    --link-selected-fg: var(--secondary);
+
+    --selected-bg: #F3E3E6;
+    --selected-row: #F6ECE9;
+    --darkened-bg: #F3EEE9;
+    --hairline-color: #E7DFD9;
+    --border-color: #DCD2CB;
+
+    --button-bg: var(--secondary);
+    --button-hover-bg: #3d332e;
+    --default-button-bg: var(--primary);
+    --default-button-hover-bg: #5E2537;
+}
+
+body {
+    font-family: "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+#site-name,
+.module h2,
+fieldset.module h2,
+#branding h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+}

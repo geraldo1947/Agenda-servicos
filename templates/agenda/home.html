@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+  <h1 class="h3 mb-1">Painel</h1>
+  <p class="text-muted mb-4">Visao geral dos clientes e servicos cadastrados.</p>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <p class="text-muted mb-1">Clientes cadastrados</p>
+          <p class="display-6 mb-0">{{ total_clientes }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <p class="text-muted mb-1">Servicos ativos</p>
+          <p class="display-6 mb-0">{{ total_servicos }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a href="{% url 'cliente_novo' %}" class="btn btn-primary">Novo cliente</a>
+  <a href="{% url 'servico_novo' %}" class="btn btn-outline-primary">Novo servico</a>
+{% endblock %}

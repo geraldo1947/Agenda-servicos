@@ -1,0 +1,182 @@
+/* Identidade visual do projeto — paleta de salao (vinho + dourado envelhecido)
+   aplicada por cima do Bootstrap. O resto do layout continua vindo dele. */
+
+:root {
+    --ink: #2B2320;
+    --muted: #7A6F68;
+    --bg: #FBF8F5;
+    --surface: #FFFFFF;
+    --rule: #E7DFD9;
+
+    --accent: #7C3248;
+    --accent-dark: #5E2537;
+    --accent-soft: #F3E3E6;
+    --gold: #A9793E;
+
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* Faz o Bootstrap herdar a cor de destaque em botoes, links e badges "primary" */
+:root {
+    --bs-primary: var(--accent);
+    --bs-primary-rgb: 124, 50, 72;
+    --bs-link-color: var(--accent);
+    --bs-link-color-rgb: 124, 50, 72;
+    --bs-link-hover-color: var(--accent-dark);
+    --bs-link-hover-color-rgb: 94, 37, 55;
+    --bs-body-color: var(--ink);
+    --bs-body-font-family: var(--font-body);
+}
+
+body {
+    background: var(--bg);
+    color: var(--ink);
+    padding-bottom: 3rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--ink);
+}
+
+/* ---------- navbar ---------- */
+
+.navbar-salon {
+    background: var(--ink);
+    border-bottom: 2px solid var(--gold);
+}
+
+.navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.15rem;
+    letter-spacing: .01em;
+}
+
+.brand-mark {
+    color: var(--gold);
+}
+
+.navbar-salon .nav-link {
+    font-size: .92rem;
+    letter-spacing: .01em;
+    opacity: .85;
+}
+
+.navbar-salon .nav-link:hover,
+.navbar-salon .nav-link:focus {
+    opacity: 1;
+    color: #fff;
+}
+
+/* ---------- cartoes ---------- */
+
+.card {
+    border: 1px solid var(--rule);
+    border-radius: .5rem;
+}
+
+.card.shadow-sm {
+    box-shadow: 0 1px 2px rgba(43, 35, 32, .04), 0 6px 16px -10px rgba(43, 35, 32, .18) !important;
+}
+
+/* cartoes de numero do painel (home) ganham uma faixa dourada no topo */
+.row.g-3 > .col-md-6:nth-of-type(1) .card {
+    border-top: 3px solid var(--accent);
+}
+
+.row.g-3 > .col-md-6:nth-of-type(2) .card {
+    border-top: 3px solid var(--gold);
+}
+
+.display-6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+}
+
+/* ---------- botoes ---------- */
+
+.btn {
+    font-weight: 500;
+    border-radius: .4rem;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent-dark);
+    --bs-btn-hover-border-color: var(--accent-dark);
+    --bs-btn-active-bg: var(--accent-dark);
+    --bs-btn-active-border-color: var(--accent-dark);
+    --bs-btn-disabled-bg: var(--accent);
+    --bs-btn-disabled-border-color: var(--accent);
+    --bs-btn-focus-shadow-rgb: 124, 50, 72;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent);
+    --bs-btn-hover-border-color: var(--accent);
+    --bs-btn-active-bg: var(--accent);
+    --bs-btn-active-border-color: var(--accent);
+    --bs-btn-disabled-color: var(--accent);
+    --bs-btn-disabled-border-color: var(--accent);
+    --bs-btn-focus-shadow-rgb: 124, 50, 72;
+}
+
+.btn-link {
+    color: var(--muted);
+}
+
+/* ---------- tabelas ---------- */
+
+.table > thead {
+    font-family: var(--font-display);
+    font-size: .82rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.table-light,
+.table > :not(caption) > * > * {
+    background-color: transparent;
+}
+
+.table-hover > tbody > tr:hover > * {
+    background-color: var(--accent-soft);
+}
+
+/* ---------- formularios ---------- */
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 .2rem rgba(124, 50, 72, .15);
+}
+
+.form-label {
+    font-weight: 500;
+    font-size: .92rem;
+    color: var(--ink);
+}
+
+/* ---------- diversos ---------- */
+
+.text-muted {
+    color: var(--muted) !important;
+}
+
+a {
+    color: var(--accent);
+}
+
+a:hover {
+    color: var(--accent-dark);
+}
