@@ -343,3 +343,20 @@ class AgendamentoTests(TestCase):
             f'<a href="{reverse("agendamento_lista")}" class="btn btn-link">Cancelar</a>',
             html=True,
         )
+
+    def test_trocar_para_servico_mais_longo_que_invade_o_proximo_e_recusado(self):
+        # 10:00-10:30 (Corte) e outro as 11:00. Trocar o primeiro para um
+        # servico de 90 min iria ate 11:30 e invadiria o das 11:00.
+        longo = Servico.objects.create(nome="Coloracao", duracao_minutos=90, preco=180)
+        primeiro = self.criar(self.base)
+        self.criar(self.base + timedelta(minutes=60), cliente=self.outro_cliente)
+
+        resposta = self.client.post(
+            reverse("agendamento_editar", args=[primeiro.pk]),
+            self.dados_form(self.base, cliente=self.cliente.pk, servico=longo.pk),
+        )
+
+        self.assertContains(resposta, "Horario indisponivel")
+        primeiro.refresh_from_db()
+        self.assertEqual(primeiro.servico, self.corte)
+
