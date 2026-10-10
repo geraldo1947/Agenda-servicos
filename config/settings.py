@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 
+from django.contrib.messages import constants as messages
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,6 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# (Projeto academico: a chave e o DEBUG abaixo servem so para desenvolvimento.
+# Antes de publicar de verdade, mover a chave para variavel de ambiente.)
 SECRET_KEY = 'django-insecure-#f!z__&$ygr=a%q6r-z$oog3rh6jpm*be^-_%d8x#iotv3!++a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -121,11 +125,16 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 
+# Mensagens (django.contrib.messages): o Bootstrap nao tem a classe "alert-error",
+# so "alert-danger". Sem este mapa, avisos de erro (como "nao e possivel excluir")
+# apareceriam sem cor. O base.html monta a classe como alert-<tag>.
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+}
+
+
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# Nenhum e-mail e enviado de verdade: o texto aparece no terminal do servidor.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
