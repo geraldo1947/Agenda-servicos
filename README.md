@@ -3,6 +3,15 @@
 Sistema web de agendamento de servicos (barbearia / salao / clinica), feito em
 **Python + Django** para a materia de Projeto de Software.
 
+Funcionalidades:
+
+- **Clientes** e **servicos**: cadastro, busca, edicao e exclusao.
+- **Agendamentos**: marcar horario para um cliente e um servico, com filtro por
+  data e situacao. O sistema **bloqueia horarios em conflito**, calculando o fim
+  de cada agendamento pela duracao do servico. Explicacao completa em
+  [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md).
+- **Painel inicial** com contadores e os proximos horarios.
+
 Atende o requisito de **3 camadas**:
 
 | Camada | Onde fica |
@@ -71,7 +80,7 @@ python manage.py test
 agenda-servicos/
 ├── config/              # configuracao do projeto Django (settings, urls raiz)
 ├── agenda/              # o app com a regra de negocio
-│   ├── models.py        # CAMADA DE DADOS: Cliente e Servico
+│   ├── models.py        # CAMADA DE DADOS: Cliente, Servico e Agendamento
 │   ├── forms.py         # validacao e montagem dos formularios
 │   ├── views.py         # CAMADA DE BACK-END: o que acontece em cada URL
 │   ├── urls.py          # quais enderecos existem
@@ -81,7 +90,7 @@ agenda-servicos/
 ├── templates/           # CAMADA DE FRONT-END: o HTML
 ├── static/css/          # estilo proprio
 ├── requirements.txt     # dependencias
-└── docs/                # planejamento das entregas e roteiro dos videos
+└── docs/                # documentacao (AGENDAMENTO.md)
 ```
 
 ## Decisoes tecnicas
@@ -95,16 +104,23 @@ escrevem um CRUD com menos linhas. Aqui foram usadas funcoes de proposito:
 da para ler cada view de cima a baixo e entender exatamente o que acontece,
 o que importa mais do que economizar linhas em um projeto de aprendizado.
 
-**`duracao_minutos` no `Servico` desde a primeira entrega.** Ela nao e usada
-ainda, mas a regra de conflito de horario da entrega seguinte depende dela
-para calcular o fim de um agendamento. Colocar agora evita uma migration
-extra depois.
+**`duracao_minutos` no `Servico` desde a primeira entrega.** O `Agendamento`
+usa a duracao para calcular o fim do horario e detectar conflitos. Ter o campo
+desde o inicio evitou uma migration extra.
+
+**Regra de conflito no model, nao na view.** A validacao fica em
+`Agendamento.clean()`, entao vale tanto no site quanto no `/admin/`.
+
+**Cliente e servico com agendamento nao podem ser excluidos**
+(`on_delete=PROTECT`), para nao perder o historico. Para tirar um servico de
+uso, basta desativa-lo.
 
 **Exclusao so acontece via POST.** A tela de confirmacao existe porque um
 link `GET` que apaga dados pode ser disparado sem intencao do usuario.
 
 ## Proximos passos
 
-Depois de rodar o projeto, va para [`docs/COMECE-AQUI.md`](docs/COMECE-AQUI.md) —
-e o indice que diz a ordem de ler o resto da documentacao (entender o
-codigo, criar o repositorio, montar o board, gravar o video, entregar).
+Depois de rodar o projeto, leia [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md): ele
+explica a funcionalidade de agendamento, as regras de negocio, como o conflito
+de horario e detectado, onde fica cada arquivo, os testes e as limitacoes
+conhecidas.
