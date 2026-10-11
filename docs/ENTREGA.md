@@ -26,7 +26,7 @@ quando estiver pronto. Assim a `main` e sempre uma versao que roda.
 git status
 ```
 
-Deve mostrar a branch `ac2-agendamento`. O `.gitignore` do projeto ja impede que
+Deve mostrar a sua branch de trabalho. O `.gitignore` do projeto ja impede que
 `db.sqlite3`, `.venv/` e `__pycache__/` sejam enviados: esses nomes **nao** devem
 aparecer na lista do `git status`.
 
@@ -64,11 +64,11 @@ Depois confira: `git log --oneline` mostra os commits e `git status` diz
 ### 2.3 Enviar
 
 ```bash
-git push -u origin ac2-agendamento
+git push -u origin <nome-da-branch>
 ```
 
 Em seguida, junte na `main`: abra um **Pull Request** no GitHub e faca o *merge*
-(ou, localmente, `git switch main`, `git merge ac2-agendamento` e `git push`).
+(ou, localmente, `git switch main`, `git merge <nome-da-branch>` e `git push`).
 
 ### 2.4 Marcar a entrega com uma tag
 

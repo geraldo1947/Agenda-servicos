@@ -69,7 +69,7 @@ Use os que fizerem sentido para o que voce quer explicar:
 - A exclusao so acontece por **POST**, com tela de confirmacao.
 - Depois de um POST bem-sucedido a view faz **redirect** (evita reenviar o
   formulario ao apertar F5).
-- Existem **35 testes automatizados**, incluindo os casos de conflito.
+- Existem **36 testes automatizados**, incluindo os casos de conflito.
 - **Limitacoes** (vale ser honesto sobre elas): ainda nao ha login; so existe um
   profissional (um horario ocupado vale para toda a agenda); o fim gravado nao
   se atualiza se a duracao do servico mudar depois (veja `AGENDAMENTO.md`).

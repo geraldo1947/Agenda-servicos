@@ -63,7 +63,7 @@ projeto/
 │   ├── views.py                #   uma funcao por tela/acao
 │   ├── urls.py                 #   enderecos do site
 │   ├── admin.py                #   painel /admin/ (colunas, filtros, titulo)
-│   ├── tests.py                #   35 testes automatizados
+│   ├── tests.py                #   36 testes automatizados
 │   └── management/commands/popular_dados.py   # dados de exemplo
 ├── templates/                  # HTML
 │   ├── base.html               #   esqueleto de toda pagina do site
@@ -252,7 +252,7 @@ Em desenvolvimento esses avisos sao esperados e nao indicam erro.
 `get_or_create` e os agendamentos so sao criados se ainda nao existir nenhum (os
 horarios dependem do dia em que o comando roda).
 
-**`python manage.py test`** roda 35 testes, sempre em um banco temporario:
+**`python manage.py test`** roda 36 testes, sempre em um banco temporario:
 
 | Grupo | Testes | Cobre |
 |---|---|---|
