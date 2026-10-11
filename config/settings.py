@@ -137,4 +137,9 @@ MESSAGE_TAGS = {
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
 # Nenhum e-mail e enviado de verdade: o texto aparece no terminal do servidor.
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# MAILERS e a configuracao de e-mail do Django 6.1 (EMAIL_BACKEND esta deprecada).
+MAILERS = {
+    'default': {
+        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    },
+}
