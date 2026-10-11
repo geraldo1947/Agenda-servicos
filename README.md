@@ -5,12 +5,15 @@ Sistema web de agendamento de servicos (barbearia / salao / clinica), feito em
 
 Funcionalidades:
 
-- **Clientes** e **servicos**: cadastro, busca, edicao e exclusao.
+- **Clientes**: cadastro, busca por nome ou telefone, edicao e exclusao.
+- **Servicos**: cadastro com duracao e preco, busca, edicao e exclusao.
+  Detalhes dos dois cadastros em [`docs/CADASTROS.md`](docs/CADASTROS.md).
 - **Agendamentos**: marcar horario para um cliente e um servico, com filtro por
   data e situacao. O sistema **bloqueia horarios em conflito**, calculando o fim
-  de cada agendamento pela duracao do servico. Explicacao completa em
-  [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md).
+  de cada agendamento pela duracao do servico (detalhes em
+  [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md)).
 - **Painel inicial** com contadores e os proximos horarios.
+- **Painel `/admin/`** do Django, personalizado.
 
 Atende o requisito de **3 camadas**:
 
@@ -25,8 +28,8 @@ Atende o requisito de **3 camadas**:
 Precisa de **Python 3.12 ou mais novo** instalado.
 
 ```bash
-git clone <url-do-repositorio>
-cd agenda-servicos
+git clone https://github.com/geraldo1947/Agenda-servicos.git
+cd Agenda-servicos
 python -m venv .venv
 ```
 
@@ -74,10 +77,14 @@ python manage.py createsuperuser
 python manage.py test
 ```
 
+Os testes cobrem cadastro, busca, edicao e exclusao de clientes e servicos, o
+comando `popular_dados` e, principalmente, a **regra de conflito de horario** dos
+agendamentos. O resultado esperado termina em `OK`.
+
 ## Estrutura de pastas
 
 ```
-agenda-servicos/
+Agenda-servicos/
 ├── config/              # configuracao do projeto Django (settings, urls raiz)
 ├── agenda/              # o app com a regra de negocio
 │   ├── models.py        # CAMADA DE DADOS: Cliente, Servico e Agendamento
@@ -86,27 +93,26 @@ agenda-servicos/
 │   ├── urls.py          # quais enderecos existem
 │   ├── admin.py         # configuracao do painel /admin
 │   ├── tests.py         # testes automatizados
+│   ├── migrations/      # historico das mudancas no banco
 │   └── management/commands/popular_dados.py
-├── templates/           # CAMADA DE FRONT-END: o HTML
-├── static/css/          # estilo proprio
+├── templates/           # CAMADA DE FRONT-END: o HTML (base.html, agenda/, admin/)
+├── static/css/          # estilo proprio (estilo.css do site, admin-salon.css do /admin)
 ├── requirements.txt     # dependencias
-└── docs/                # documentacao (AGENDAMENTO.md)
+└── docs/                # documentacao (veja abaixo)
 ```
 
 ## Documentacao
 
-Comece por [`docs/COMECE-AQUI.md`](docs/COMECE-AQUI.md): ele diz a ordem de leitura.
-
 | Documento | Para que serve |
 |---|---|
-| [`docs/COMECE-AQUI.md`](docs/COMECE-AQUI.md) | Indice, ordem de leitura e checklist |
-| [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Consulta: pastas, enderecos, dados, telas e configuracoes |
-| [`docs/CADASTROS.md`](docs/CADASTROS.md) | Cadastro de clientes e servicos |
-| [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md) | Agendamento: regras, conflito de horario, fluxo, testes e limitacoes |
-| [`docs/EXPLICANDO-A-IMPLEMENTACAO.md`](docs/EXPLICANDO-A-IMPLEMENTACAO.md) | Como explicar o que foi implementado (roteiro, demonstracao, perguntas) |
-| [`docs/ENTENDENDO-O-CODIGO.md`](docs/ENTENDENDO-O-CODIGO.md) | Guia de estudo do codigo |
-| [`docs/INFORMACOES-VIDEO.md`](docs/INFORMACOES-VIDEO.md) | O que mostrar e citar no video |
-| [`docs/ENTREGA.md`](docs/ENTREGA.md) | Repositorio, board e checklist de entrega |
+| [`docs/COMECE-AQUI.md`](docs/COMECE-AQUI.md) | Indice e ordem de leitura, com checklist |
+| [`docs/ENTENDENDO-O-CODIGO.md`](docs/ENTENDENDO-O-CODIGO.md) | Guia de estudo: fluxo de uma requisicao, arquivo por arquivo, glossario e perguntas do professor |
+| [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Consulta: como o site funciona e como foi estruturado (pastas, enderecos, dados, telas, configuracoes, como acrescentar funcionalidades) |
+| [`docs/CADASTROS.md`](docs/CADASTROS.md) | A primeira funcionalidade: cadastro, busca, edicao e exclusao de clientes e servicos, validacoes e limites |
+| [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md) | A funcionalidade de agendamento: telas, modelo de dados, regra de conflito, decisoes tecnicas e limites |
+| [`docs/EXPLICANDO-A-IMPLEMENTACAO.md`](docs/EXPLICANDO-A-IMPLEMENTACAO.md) | Como explicar o que foi implementado: roteiro, demonstracao e perguntas provaveis |
+| [`docs/INFORMACOES-VIDEO.md`](docs/INFORMACOES-VIDEO.md) | O que mostrar e citar no video (nao e roteiro), como gravar e publicar |
+| [`docs/ENTREGA.md`](docs/ENTREGA.md) | Branch, commits, tag, board e checklist final de entrega |
 
 ## Decisoes tecnicas
 
@@ -119,27 +125,34 @@ escrevem um CRUD com menos linhas. Aqui foram usadas funcoes de proposito:
 da para ler cada view de cima a baixo e entender exatamente o que acontece,
 o que importa mais do que economizar linhas em um projeto de aprendizado.
 
-**`duracao_minutos` no `Servico` desde a primeira entrega.** O `Agendamento`
-usa a duracao para calcular o fim do horario e detectar conflitos. Ter o campo
-desde o inicio evitou uma migration extra.
+**`duracao_minutos` no `Servico` desde a primeira entrega.** Ela e usada pelo
+`Agendamento` para calcular o fim do horario e detectar conflitos. Ter o campo
+desde o inicio evitou mexer na tabela de servicos.
 
 **Regra de conflito no model, nao na view.** A validacao fica em
 `Agendamento.clean()`, entao vale tanto no site quanto no `/admin/`.
-
-**Cliente e servico com agendamento nao podem ser excluidos**
-(`on_delete=PROTECT`), para nao perder o historico. Para tirar um servico de
-uso, basta desativa-lo.
+Detalhes em [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md).
 
 **Exclusao so acontece via POST.** A tela de confirmacao existe porque um
 link `GET` que apaga dados pode ser disparado sem intencao do usuario.
 
-## Proximos passos
+**Cliente e servico com agendamento nao podem ser excluidos** (`on_delete=PROTECT`),
+para nao perder o historico. Para tirar um servico de uso, basta desativa-lo.
 
-Depois de rodar o projeto, leia [`docs/COMECE-AQUI.md`](docs/COMECE-AQUI.md) e, para o agendamento, [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md): ele
-explica a funcionalidade de agendamento, as regras de negocio, como o conflito
-de horario e detectado, onde fica cada arquivo, os testes e as limitacoes
-conhecidas.
+**Avisos de erro em vermelho.** O Bootstrap so conhece `alert-danger`, e o Django
+chama essa mensagem de `error`; o `MESSAGE_TAGS` do `settings.py` faz a traducao.
 
-Para **explicar** o que foi implementado a outra pessoa (ordem sugerida,
-demonstracao e perguntas provaveis), use
-[`docs/EXPLICANDO-A-IMPLEMENTACAO.md`](docs/EXPLICANDO-A-IMPLEMENTACAO.md).
+## Limitacoes e proximos passos
+
+- **Sem login**: qualquer pessoa com o endereco consegue alterar os dados.
+  Proximo passo natural: autenticacao e `login_required` nas views.
+- **Um unico profissional**: um horario ocupado vale para toda a agenda. Para
+  varios profissionais, o agendamento ganharia um campo `profissional`.
+- **Duracao do servico alterada depois**: os agendamentos futuros ja gravados
+  mantem o fim antigo e podem permitir sobreposicao (detalhes em
+  [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md)).
+- **Sem paginacao** nas listas.
+- **Banco SQLite**: a troca para PostgreSQL esta prevista.
+- **Configuracao de desenvolvimento**: `SECRET_KEY` e `DEBUG=True` estao no
+  `settings.py` apenas para desenvolvimento; antes de publicar o sistema de
+  verdade, devem ir para variaveis de ambiente.

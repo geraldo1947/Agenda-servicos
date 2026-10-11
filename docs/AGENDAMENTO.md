@@ -244,9 +244,10 @@ Passo a passo:
 **O `fim` e guardado no banco, em vez de calculado so quando necessario.**
 Com o `fim` gravado, procurar conflitos vira uma consulta simples e o proprio
 banco faz o filtro. Sem ele, seria preciso trazer todos os agendamentos para o
-Python e calcular um a um. Efeito colateral aceito: se a duracao de um servico
-mudar depois, os agendamentos antigos mantem o fim que tinham, o que e o
-comportamento correto para o historico.
+Python e calcular um a um. Efeito colateral: se a duracao de um servico mudar
+depois, os agendamentos mantem o fim que tinham. Isso e correto para o
+historico (atendimentos ja feitos), mas para agendamentos **futuros** e uma
+limitacao (secao 10).
 
 **A regra de conflito fica no model (`clean()`), nao na view.**
 O model e o ponto por onde todo salvamento com validacao passa. Se a regra
@@ -322,6 +323,7 @@ trabalho, mas e bom conhecer.
 | **Um unico profissional** | Um horario ocupado vale para toda a agenda; dois clientes nao podem ser atendidos ao mesmo tempo | Campo `profissional` no model e conflito calculado por profissional |
 | **Corrida entre dois envios simultaneos** | A checagem e o `save()` nao sao atomicos: dois pedidos no mesmo instante poderiam passar juntos | Transacao com bloqueio (`select_for_update`) ou restricao no banco |
 | **`objects.create()` nao valida** | Criar pelo codigo (como faz o `popular_dados`) nao executa `clean()`; so formulario e admin validam | Chamar `full_clean()` antes, ou validar em `save()` |
+| **Duracao do servico alterada depois** | Os agendamentos ja gravados mantem o `fim` antigo. Se um servico passar de 30 para 60 minutos, os agendamentos **futuros** continuam terminando 30 minutos depois do inicio e podem permitir uma sobreposicao | Recalcular o `fim` dos agendamentos futuros quando a duracao mudar, ou calcula-lo na consulta |
 | **Servico com duracao 0** | O campo aceita `0`, gerando um horario com `fim` igual ao `inicio`, que nao ocupa tempo (so conflita se cair dentro de outro horario) | `MinValueValidator(1)` em `duracao_minutos` |
 | **Novo agendamento ja como concluido/cancelado** | O formulario de criacao mostra o campo situacao | Esconder `status` na criacao |
 | **Lista sem paginacao** | Todos os horarios aparecem juntos, os mais antigos primeiro | Paginacao e ordenar do mais proximo |
