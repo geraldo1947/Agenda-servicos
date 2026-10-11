@@ -124,3 +124,7 @@ Depois de rodar o projeto, leia [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md): el
 explica a funcionalidade de agendamento, as regras de negocio, como o conflito
 de horario e detectado, onde fica cada arquivo, os testes e as limitacoes
 conhecidas.
+
+Para **explicar** o que foi implementado a outra pessoa (ordem sugerida,
+demonstracao e perguntas provaveis), use
+[`docs/EXPLICANDO-A-IMPLEMENTACAO.md`](docs/EXPLICANDO-A-IMPLEMENTACAO.md).
