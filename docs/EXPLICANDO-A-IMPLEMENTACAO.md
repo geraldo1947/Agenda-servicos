@@ -72,7 +72,7 @@ organizacao.
 
 | # | Commit | O que entrega | Frase para explicar |
 |---|---|---|---|
-| 1 | `ab17580` Corrige EMAIL_BACKEND e a cor das mensagens de erro | `config/settings.py` | "Preparacao: corrigi uma configuracao que nao fazia efeito e fiz as mensagens de erro aparecerem em vermelho." |
+| 1 | `ab17580` Corrige EMAIL_BACKEND e a cor das mensagens de erro | `config/settings.py` | "Preparacao: mensagens de erro em vermelho e comentarios de configuracao. (A troca de MAILERS por EMAIL_BACKEND feita aqui foi um engano e foi revertida depois; veja a secao 5.)" |
 | 2 | `304625b` Adiciona model Agendamento com regra de conflito de horario | `models.py`, migration `0002`, `admin.py` | "Aqui nasce a funcionalidade: a tabela e a regra de conflito." |
 | 3 | `8649842` Adiciona telas de agendamento e protege cliente/servico com agendamento | `forms.py`, `views.py`, `urls.py`, templates, `popular_dados.py` | "Aqui o usuario passa a usar: telas, filtros, painel e a protecao contra excluir quem tem agendamento." |
 | 4 | `f5a11d0` Adiciona testes de agendamento e cobre lacunas | `tests.py` | "A prova de que a regra funciona, incluindo os casos de borda." |
@@ -110,7 +110,7 @@ organizacao.
 | `templates/agenda/home.html` | Terceiro contador e lista de proximos horarios | Visao geral no painel inicial |
 | `templates/agenda/form.html` | Mostra o erro geral do formulario; "Cancelar" volta para a lista | O erro de conflito nao pertence a um campo e nao aparecia |
 | `agenda/management/commands/popular_dados.py` | Cria 3 agendamentos de exemplo, sem duplicar | Demonstrar sem digitar tudo |
-| `config/settings.py` | `EMAIL_BACKEND` correto; `MESSAGE_TAGS` | Ver secao 5 |
+| `config/settings.py` | `MESSAGE_TAGS` e comentarios; `MAILERS` mantido | Ver secao 5 |
 | `agenda/tests.py` | +31 testes | Garantir o comportamento |
 | `README.md` | Funcionalidades, estrutura e decisoes atualizadas | Manter a documentacao em dia |
 
@@ -129,7 +129,7 @@ Para nao confundir quem ouve, separe o que **e** a funcionalidade do que foi
 **Ajustes feitos de passagem (nao sao agendamento)**
 | Ajuste | Onde | Motivo |
 |---|---|---|
-| `MAILERS` virou `EMAIL_BACKEND` | `settings.py` | `MAILERS` nao e uma configuracao do Django e nao fazia efeito |
+| `MAILERS` mantido (uma troca por `EMAIL_BACKEND` foi feita e **revertida**) | `settings.py` | `MAILERS` e a configuracao atual do Django 6.1; `EMAIL_BACKEND` esta deprecada para o Django 7.0. A troca do commit `ab17580` foi um engano, corrigido depois |
 | `MESSAGE_TAGS` | `settings.py` | O Bootstrap nao tem `alert-error`; sem isso o aviso de erro aparecia sem cor |
 | Botao "Cancelar" corrigido | `form.html` e views de formulario | Depois de um erro, ele apontava para o proprio formulario |
 | `ProtectedError` tratado | `cliente_excluir` e `servico_excluir` | Sem tratar, excluir quem tem agendamento daria erro 500 |

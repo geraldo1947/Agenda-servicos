@@ -93,6 +93,21 @@ agenda-servicos/
 └── docs/                # documentacao (AGENDAMENTO.md)
 ```
 
+## Documentacao
+
+Comece por [`docs/COMECE-AQUI.md`](docs/COMECE-AQUI.md): ele diz a ordem de leitura.
+
+| Documento | Para que serve |
+|---|---|
+| [`docs/COMECE-AQUI.md`](docs/COMECE-AQUI.md) | Indice, ordem de leitura e checklist |
+| [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Consulta: pastas, enderecos, dados, telas e configuracoes |
+| [`docs/CADASTROS.md`](docs/CADASTROS.md) | Cadastro de clientes e servicos |
+| [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md) | Agendamento: regras, conflito de horario, fluxo, testes e limitacoes |
+| [`docs/EXPLICANDO-A-IMPLEMENTACAO.md`](docs/EXPLICANDO-A-IMPLEMENTACAO.md) | Como explicar o que foi implementado (roteiro, demonstracao, perguntas) |
+| [`docs/ENTENDENDO-O-CODIGO.md`](docs/ENTENDENDO-O-CODIGO.md) | Guia de estudo do codigo |
+| [`docs/INFORMACOES-VIDEO.md`](docs/INFORMACOES-VIDEO.md) | O que mostrar e citar no video |
+| [`docs/ENTREGA.md`](docs/ENTREGA.md) | Repositorio, board e checklist de entrega |
+
 ## Decisoes tecnicas
 
 **SQLite no desenvolvimento.** Quem clonar o repositorio consegue rodar sem
@@ -120,7 +135,7 @@ link `GET` que apaga dados pode ser disparado sem intencao do usuario.
 
 ## Proximos passos
 
-Depois de rodar o projeto, leia [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md): ele
+Depois de rodar o projeto, leia [`docs/COMECE-AQUI.md`](docs/COMECE-AQUI.md) e, para o agendamento, [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md): ele
 explica a funcionalidade de agendamento, as regras de negocio, como o conflito
 de horario e detectado, onde fica cada arquivo, os testes e as limitacoes
 conhecidas.
