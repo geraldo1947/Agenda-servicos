@@ -55,6 +55,9 @@ class AgendamentoForm(BootstrapFormMixin, forms.ModelForm):
         if self.instance.servico_id:
             ativos |= Q(pk=self.instance.servico_id)
         self.fields["servico"].queryset = Servico.objects.filter(ativos)
+        # Todo agendamento novo nasce "agendado"; a situacao so muda ao editar.
+        if not self.instance.pk:
+            del self.fields["status"]
 
     def clean_inicio(self):
         inicio = self.cleaned_data["inicio"]

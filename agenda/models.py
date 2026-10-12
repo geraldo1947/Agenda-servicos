@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -29,7 +30,10 @@ class Servico(models.Model):
     descricao = models.TextField("descricao", blank=True)
     # A duracao existe desde a AC1 porque a AC2 vai usar ela para calcular
     # o fim do agendamento e detectar conflito de horario.
-    duracao_minutos = models.PositiveIntegerField("duracao (minutos)", default=30)
+    # Minimo de 1 minuto: duracao 0 geraria um horario que nao ocupa tempo.
+    duracao_minutos = models.PositiveIntegerField(
+        "duracao (minutos)", default=30, validators=[MinValueValidator(1)]
+    )
     preco = models.DecimalField("preco", max_digits=8, decimal_places=2)
     ativo = models.BooleanField("ativo", default=True)
     criado_em = models.DateTimeField("criado em", auto_now_add=True)
@@ -41,6 +45,54 @@ class Servico(models.Model):
 
     def __str__(self):
         return f"{self.nome} ({self.duracao_minutos} min)"
+
+    def _duracao_mudou(self):
+        """True se este servico ja existe no banco com outra duracao."""
+        if not self.pk:
+            return False
+        antiga = Servico.objects.filter(pk=self.pk).values_list("duracao_minutos", flat=True).first()
+        return antiga is not None and antiga != self.duracao_minutos
+
+    def _agendamentos_futuros(self):
+        """Agendamentos ativos deste servico que ainda vao acontecer."""
+        return (
+            self.agendamentos
+            .exclude(status=Agendamento.Status.CANCELADO)
+            .filter(inicio__gte=timezone.now())
+        )
+
+    def clean(self):
+        # Mudar a duracao muda o fim dos agendamentos futuros deste servico.
+        # Se algum passaria a invadir outro horario, a mudanca e recusada.
+        if not self._duracao_mudou():
+            return
+
+        nova = timedelta(minutes=self.duracao_minutos)
+        for ag in self._agendamentos_futuros().select_related("cliente"):
+            invadido = (
+                Agendamento.objects
+                .exclude(status=Agendamento.Status.CANCELADO)
+                .exclude(pk=ag.pk)
+                .filter(inicio__lt=ag.inicio + nova, fim__gt=ag.inicio)
+                .first()
+            )
+            if invadido:
+                inicio = timezone.localtime(ag.inicio)
+                raise ValidationError(
+                    f"Nao e possivel mudar a duracao: o agendamento de {ag.cliente.nome} "
+                    f"em {inicio:%d/%m/%Y %H:%M} passaria a invadir outro horario."
+                )
+
+    def save(self, *args, **kwargs):
+        duracao_mudou = self._duracao_mudou()
+        super().save(*args, **kwargs)
+        if duracao_mudou:
+            # Mantem o fim gravado em dia com a nova duracao (so os futuros:
+            # o historico ja aconteceu com a duracao antiga).
+            nova = timedelta(minutes=self.duracao_minutos)
+            for ag in self._agendamentos_futuros():
+                ag.fim = ag.inicio + nova
+                ag.save(update_fields=["fim"])
 
 
 class Agendamento(models.Model):

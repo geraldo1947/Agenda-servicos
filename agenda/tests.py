@@ -360,3 +360,85 @@ class AgendamentoTests(TestCase):
         primeiro.refresh_from_db()
         self.assertEqual(primeiro.servico, self.corte)
 
+
+    # --- duracao minima do servico ---
+
+    def test_servico_com_duracao_zero_e_recusado(self):
+        resposta = self.client.post(
+            reverse("servico_novo"),
+            {"nome": "Instantaneo", "descricao": "", "duracao_minutos": 0, "preco": "10.00", "ativo": "on"},
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertFalse(Servico.objects.filter(nome="Instantaneo").exists())
+
+    # --- mudanca de duracao do servico ---
+
+    def editar_duracao(self, servico, minutos):
+        return self.client.post(
+            reverse("servico_editar", args=[servico.pk]),
+            {"nome": servico.nome, "descricao": "", "duracao_minutos": minutos, "preco": "50.00", "ativo": "on"},
+        )
+
+    def test_mudar_duracao_recalcula_o_fim_dos_agendamentos_futuros(self):
+        ag = self.criar(self.base)
+
+        resposta = self.editar_duracao(self.corte, 60)
+
+        self.assertRedirects(resposta, reverse("servico_lista"))
+        ag.refresh_from_db()
+        self.assertEqual(ag.fim, self.base + timedelta(minutes=60))
+
+    def test_mudar_duracao_nao_mexe_em_agendamento_passado(self):
+        passado = self.base - timedelta(days=10)
+        ag = self.criar(passado)
+
+        self.editar_duracao(self.corte, 60)
+
+        ag.refresh_from_db()
+        self.assertEqual(ag.fim, passado + timedelta(minutes=30))
+
+    def test_mudar_duracao_que_invade_outro_horario_e_recusado(self):
+        # 10:00-10:30 (Corte) e outro as 10:45. Passar o Corte para 60 min
+        # faria o primeiro ir ate 11:00 e invadir o das 10:45.
+        longo = Servico.objects.create(nome="Barba", duracao_minutos=15, preco=20)
+        primeiro = self.criar(self.base)
+        self.criar(self.base + timedelta(minutes=45), cliente=self.outro_cliente, servico=longo)
+
+        resposta = self.editar_duracao(self.corte, 60)
+
+        self.assertContains(resposta, "Nao e possivel mudar a duracao")
+        self.corte.refresh_from_db()
+        primeiro.refresh_from_db()
+        self.assertEqual(self.corte.duracao_minutos, 30)
+        self.assertEqual(primeiro.fim, self.base + timedelta(minutes=30))
+
+    # --- situacao na criacao ---
+
+    def test_formulario_novo_nao_mostra_o_campo_situacao(self):
+        resposta = self.client.get(reverse("agendamento_novo"))
+
+        self.assertNotContains(resposta, 'name="status"')
+
+    def test_agendamento_novo_sempre_nasce_agendado(self):
+        self.client.post(reverse("agendamento_novo"), self.dados_form(self.base, status="cancelado"))
+
+        self.assertEqual(Agendamento.objects.get().status, Agendamento.Status.AGENDADO)
+
+    def test_formulario_de_edicao_mantem_o_campo_situacao(self):
+        ag = self.criar(self.base)
+
+        resposta = self.client.get(reverse("agendamento_editar", args=[ag.pk]))
+
+        self.assertContains(resposta, 'name="status"')
+
+    # --- ordem da lista ---
+
+    def test_lista_mostra_primeiro_o_horario_mais_proximo(self):
+        longe = self.criar(self.base + timedelta(days=5), cliente=self.outro_cliente)
+        perto = self.criar(self.base)
+        passado = self.criar(self.base - timedelta(days=10))
+
+        resposta = self.client.get(reverse("agendamento_lista"))
+
+        self.assertEqual(list(resposta.context["agendamentos"]), [perto, longe, passado])

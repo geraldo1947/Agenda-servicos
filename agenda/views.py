@@ -132,6 +132,12 @@ def agendamento_lista(request):
         agendamentos = agendamentos.filter(status=status)
     else:
         status = ""
+    # Os proximos horarios primeiro (do mais proximo para o mais distante);
+    # depois os que ja passaram, do mais recente para o mais antigo.
+    agora = timezone.now()
+    agendamentos = list(agendamentos.filter(inicio__gte=agora).order_by("inicio")) + list(
+        agendamentos.filter(inicio__lt=agora).order_by("-inicio")
+    )
     contexto = {
         "agendamentos": agendamentos,
         "data": data,
