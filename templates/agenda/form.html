@@ -10,13 +10,6 @@
       <form method="post" novalidate>
         {% csrf_token %}
 
-        {# Erros que nao pertencem a um campo (ex.: conflito de horario) #}
-        {% if form.non_field_errors %}
-          <div class="alert alert-danger">
-            {% for erro in form.non_field_errors %}{{ erro }}{% endfor %}
-          </div>
-        {% endif %}
-
         {% for campo in form %}
           <div class="mb-3">
             <label for="{{ campo.id_for_label }}" class="form-label">{{ campo.label }}</label>
@@ -28,7 +21,7 @@
         {% endfor %}
 
         <button type="submit" class="btn btn-primary">Salvar</button>
-        <a href="{% url voltar %}" class="btn btn-link">Cancelar</a>
+        <a href="{{ request.META.HTTP_REFERER|default:'/' }}" class="btn btn-link">Cancelar</a>
       </form>
     </div>
   </div>
