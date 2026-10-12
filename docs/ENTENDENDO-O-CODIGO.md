@@ -194,7 +194,7 @@ def cliente_lista(request):
 | Arquivo | Para que serve |
 |---|---|
 | `models.py` | Define as tabelas (`Cliente`, `Servico`, `Agendamento`) e a regra de conflito |
-| `migrations/` | Historico das mudancas no banco. `0001` cria Cliente e Servico; `0002` cria Agendamento |
+| `migrations/` | Historico das mudancas no banco. `0001` cria Cliente e Servico; `0002` cria Agendamento; `0003` define a duracao minima |
 | `forms.py` | Transforma models em formularios e valida. Tem o `BootstrapFormMixin` que aplica o estilo |
 | `views.py` | Uma funcao por tela/acao (listar, novo, editar, excluir) |
 | `urls.py` | Liga cada endereco a uma view |
@@ -253,9 +253,10 @@ No model a regra vale em qualquer lugar. Os testes da regra chamam o
 **Por que guardar o campo `fim` se da para calcular?**
 Para a busca de conflito ser uma consulta simples no banco
 (`inicio < fim_novo` e `fim > inicio_novo`). Sem o `fim` guardado, seria preciso
-trazer todos os agendamentos para o Python e calcular um por um. Tem um efeito
-colateral que aceitamos: se a duracao do servico mudar depois, os agendamentos
-antigos mantem o fim que tinham, o que e correto para o historico.
+trazer todos os agendamentos para o Python e calcular um por um. O custo e manter
+o `fim` em dia: quando a duracao do servico muda, o `Servico.save()` recalcula o
+`fim` dos agendamentos futuros (os antigos mantem o fim que tinham, o que e certo
+para o historico) e o `Servico.clean()` recusa a mudanca se algum invadir outro.
 
 **Por que um horario que so encosta no outro e aceito?**
 Um corte das 10:00 as 10:30 termina exatamente quando o das 10:30 comeca. O

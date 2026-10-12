@@ -148,9 +148,6 @@ chama essa mensagem de `error`; o `MESSAGE_TAGS` do `settings.py` faz a traducao
   Proximo passo natural: autenticacao e `login_required` nas views.
 - **Um unico profissional**: um horario ocupado vale para toda a agenda. Para
   varios profissionais, o agendamento ganharia um campo `profissional`.
-- **Duracao do servico alterada depois**: os agendamentos futuros ja gravados
-  mantem o fim antigo e podem permitir sobreposicao (detalhes em
-  [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md)).
 - **Sem paginacao** nas listas.
 - **Banco SQLite**: a troca para PostgreSQL esta prevista.
 - **Configuracao de desenvolvimento**: `SECRET_KEY` e `DEBUG=True` estao no

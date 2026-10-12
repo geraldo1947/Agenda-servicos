@@ -35,7 +35,7 @@ O painel inicial (`/`) mostra quantos clientes existem e quantos servicos estao
 | | `criado_em` | automatico |
 | **Servico** | `nome` | obrigatorio, ate 120 caracteres |
 | | `descricao` | opcional |
-| | `duracao_minutos` | inteiro, padrao 30; e a base do calculo do fim do agendamento |
+| | `duracao_minutos` | inteiro, minimo 1, padrao 30; e a base do calculo do fim do agendamento |
 | | `preco` | decimal com ate 8 digitos e 2 casas (ex.: `50.00`) |
 | | `ativo` | caixa de marcar, ja marcada no cadastro novo |
 | | `criado_em` | automatico |
@@ -89,8 +89,9 @@ painel inicial.
 - **Nada impede nome repetido**: dois clientes (ou dois servicos) com o mesmo nome
   sao aceitos. Para clientes isso e desejavel (homonimos); para servicos, pode
   confundir a escolha.
-- **O formulario de servico aceita preco negativo e duracao 0.** Duracao 0 faz o
-  horario terminar no mesmo instante em que comeca.
+- **O formulario de servico aceita preco negativo.** A duracao tem minimo de 1
+  minuto (a duracao 0 e recusada). Mudar a duracao de um servico atualiza o fim
+  dos agendamentos futuros dele, e e recusado se algum passar a invadir outro.
 - **Telefone sem formato**: qualquer texto de ate 20 caracteres vale.
 - **A busca de servicos so olha o nome** (nao a descricao nem o preco).
 - Sem paginacao: a lista mostra tudo.

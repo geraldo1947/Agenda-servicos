@@ -55,7 +55,7 @@ Para o detalhe tecnico completo da funcionalidade, veja
 | Commits | 6 |
 | Arquivos | 15 nos 6 commits (12 existentes alterados e 3 novos), mais este guia |
 | Linhas | 1076 adicionadas e 37 removidas |
-| Testes | de 5 para **36** (31 novos) |
+| Testes | de 5 para **44** (39 novos) |
 | Tabela nova no banco | `agenda_agendamento` (migration `0002`) |
 | Telas novas | lista, novo, editar e excluir agendamentos |
 | Telas alteradas | painel inicial, menu e formulario generico |
@@ -111,7 +111,7 @@ organizacao.
 | `templates/agenda/form.html` | Mostra o erro geral do formulario; "Cancelar" volta para a lista | O erro de conflito nao pertence a um campo e nao aparecia |
 | `agenda/management/commands/popular_dados.py` | Cria 3 agendamentos de exemplo, sem duplicar | Demonstrar sem digitar tudo |
 | `config/settings.py` | `MESSAGE_TAGS` e comentarios; `MAILERS` mantido | Ver secao 5 |
-| `agenda/tests.py` | +31 testes | Garantir o comportamento |
+| `agenda/tests.py` | +39 testes | Garantir o comportamento |
 | `README.md` | Funcionalidades, estrutura e decisoes atualizadas | Manter a documentacao em dia |
 
 ---
@@ -152,7 +152,7 @@ Para uma explicacao de uns 10 minutos. Cada passo diz o que abrir.
 | 4 | 1 min | `agenda/forms.py` | As tres validacoes (campo, formulario, model) |
 | 5 | 1 min | `agenda/views.py`, `agendamento_novo` | A view e curta: o trabalho pesado esta no model e no form |
 | 6 | 2 min | Sistema rodando | A demonstracao da secao 7 |
-| 7 | 1 min | `python manage.py test` | 36 testes, todos passando |
+| 7 | 1 min | `python manage.py test` | 44 testes, todos passando |
 
 **Para explicar `conflitos()` sem se perder**, desenhe isto:
 
@@ -195,8 +195,9 @@ O `popular_dados` cria *Maria Silva, Corte de cabelo, amanha as 09:00*.
 
 **Por que o `fim` e guardado se da para calcular?**
 Para o banco fazer a busca de conflito sozinho, com uma consulta simples. Se a
-duracao do servico mudar depois, os agendamentos antigos mantem o fim que
-tinham, o que e o certo para historico.
+duracao do servico mudar depois, o `Servico.save()` recalcula o fim dos
+agendamentos futuros; os que ja aconteceram mantem o fim que tinham, o que e o
+certo para historico.
 
 **Por que a regra esta no model e nao na view?**
 Porque o model e por onde todo salvamento com validacao passa. Na view, o
@@ -281,7 +282,7 @@ responda direto com base nisso.
 
 ```bash
 python manage.py migrate
-python manage.py test        # deve terminar com: Ran 36 tests ... OK
+python manage.py test        # deve terminar com: Ran 44 tests ... OK
 python manage.py popular_dados
 python manage.py runserver
 ```

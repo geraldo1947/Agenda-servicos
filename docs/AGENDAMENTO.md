@@ -59,7 +59,7 @@ python manage.py popular_dados
 |---|---|---|
 | Lista | `/agendamentos/` | Mostra os horarios; filtra por **data** e por **situacao** |
 | Novo | `/agendamentos/novo/` | Marca um horario |
-| Editar | `/agendamentos/<id>/editar/` | Muda cliente, servico, horario ou situacao |
+| Editar | `/agendamentos/<id>/editar/` | Muda cliente, servico, horario ou situacao (a situacao so aparece na edicao; todo agendamento novo nasce "agendado") |
 | Excluir | `/agendamentos/<id>/excluir/` | Apaga, depois de uma tela de confirmacao |
 
 O **painel inicial** (`/`) mostra quantos agendamentos futuros existem e os 5
@@ -126,7 +126,10 @@ Classe `Agendamento`, em `agenda/models.py`.
 | `observacoes` | texto | opcional |
 | `criado_em` | data e hora | preenchido automaticamente |
 
-Os agendamentos sao ordenados por `inicio` (do mais antigo para o mais novo).
+Na lista, os horarios que ainda vao acontecer aparecem primeiro (do mais proximo
+para o mais distante), seguidos dos que ja passaram (do mais recente para o mais
+antigo). A ordem e montada em `agendamento_lista` (`views.py`); no model, a
+ordenacao padrao continua sendo por `inicio`.
 
 ---
 
@@ -244,10 +247,10 @@ Passo a passo:
 **O `fim` e guardado no banco, em vez de calculado so quando necessario.**
 Com o `fim` gravado, procurar conflitos vira uma consulta simples e o proprio
 banco faz o filtro. Sem ele, seria preciso trazer todos os agendamentos para o
-Python e calcular um a um. Efeito colateral: se a duracao de um servico mudar
-depois, os agendamentos mantem o fim que tinham. Isso e correto para o
-historico (atendimentos ja feitos), mas para agendamentos **futuros** e uma
-limitacao (secao 10).
+Python e calcular um a um. Para o `fim` nao ficar desatualizado, quando a
+duracao de um servico muda o `Servico.save()` recalcula o `fim` dos agendamentos
+**futuros** dele; os que ja aconteceram mantem o fim que tinham (historico). Se o
+novo fim invadir outro horario, `Servico.clean()` recusa a mudanca.
 
 **A regra de conflito fica no model (`clean()`), nao na view.**
 O model e o ponto por onde todo salvamento com validacao passa. Se a regra
@@ -285,7 +288,7 @@ de cima a baixo.
 python manage.py test
 ```
 
-O projeto tem **36 testes**; **24** sao de agendamento (classe `AgendamentoTests`).
+O projeto tem **44 testes**; **32** sao de agendamento (classe `AgendamentoTests`).
 A tabela mostra o que cada um garante.
 
 | Regra | Teste |
@@ -306,6 +309,10 @@ A tabela mostra o que cada um garante.
 | Lista e filtros | `test_lista_filtra_por_data`, `test_lista_filtra_por_situacao`, `test_lista_ignora_filtros_invalidos` |
 | Exclusao so por POST | `test_get_na_exclusao_nao_apaga_o_agendamento`, `test_post_na_exclusao_apaga_o_agendamento` |
 | Botao Cancelar | `test_cancelar_do_formulario_volta_para_a_lista` |
+| Duracao minima do servico | `test_servico_com_duracao_zero_e_recusado` |
+| Mudar a duracao do servico | `test_mudar_duracao_recalcula_o_fim_dos_agendamentos_futuros`, `test_mudar_duracao_nao_mexe_em_agendamento_passado`, `test_mudar_duracao_que_invade_outro_horario_e_recusado` |
+| Situacao so na edicao | `test_formulario_novo_nao_mostra_o_campo_situacao`, `test_agendamento_novo_sempre_nasce_agendado`, `test_formulario_de_edicao_mantem_o_campo_situacao` |
+| Ordem da lista | `test_lista_mostra_primeiro_o_horario_mais_proximo` |
 
 **Experimento para ver os testes funcionando:** em `agenda/models.py`, no metodo
 `conflitos`, troque `fim__gt` por `fim__gte`, rode os testes e veja
@@ -316,17 +323,16 @@ A tabela mostra o que cada um garante.
 ## 10. Limitacoes conhecidas
 
 Resultado da revisao do codigo. Nenhuma delas e um defeito para o escopo do
-trabalho, mas e bom conhecer.
+trabalho, mas e bom conhecer. (A duracao 0, a situacao na criacao, a ordem da
+lista e o `fim` desatualizado apos mudar a duracao do servico apareceram em uma
+revisao anterior e ja foram corrigidos.)
 
 | Limitacao | Detalhe | Como seria resolvida |
 |---|---|---|
 | **Um unico profissional** | Um horario ocupado vale para toda a agenda; dois clientes nao podem ser atendidos ao mesmo tempo | Campo `profissional` no model e conflito calculado por profissional |
 | **Corrida entre dois envios simultaneos** | A checagem e o `save()` nao sao atomicos: dois pedidos no mesmo instante poderiam passar juntos | Transacao com bloqueio (`select_for_update`) ou restricao no banco |
 | **`objects.create()` nao valida** | Criar pelo codigo (como faz o `popular_dados`) nao executa `clean()`; so formulario e admin validam | Chamar `full_clean()` antes, ou validar em `save()` |
-| **Duracao do servico alterada depois** | Os agendamentos ja gravados mantem o `fim` antigo. Se um servico passar de 30 para 60 minutos, os agendamentos **futuros** continuam terminando 30 minutos depois do inicio e podem permitir uma sobreposicao | Recalcular o `fim` dos agendamentos futuros quando a duracao mudar, ou calcula-lo na consulta |
-| **Servico com duracao 0** | O campo aceita `0`, gerando um horario com `fim` igual ao `inicio`, que nao ocupa tempo (so conflita se cair dentro de outro horario) | `MinValueValidator(1)` em `duracao_minutos` |
-| **Novo agendamento ja como concluido/cancelado** | O formulario de criacao mostra o campo situacao | Esconder `status` na criacao |
-| **Lista sem paginacao** | Todos os horarios aparecem juntos, os mais antigos primeiro | Paginacao e ordenar do mais proximo |
+| **Lista sem paginacao** | Todos os horarios aparecem juntos (os mais proximos primeiro) | Paginacao |
 | **Sem login** | Qualquer pessoa com o endereco altera os dados | Autenticacao e `login_required` |
 
 ---

@@ -58,12 +58,12 @@ projeto/
 │   └── wsgi.py, asgi.py        #   pontos de entrada de servidores de producao
 ├── agenda/                     # O APP: toda a regra de negocio
 │   ├── models.py               #   Cliente, Servico, Agendamento (+ regra de conflito)
-│   ├── migrations/             #   0001 (Cliente, Servico) e 0002 (Agendamento)
+│   ├── migrations/             #   0001 (Cliente, Servico), 0002 (Agendamento), 0003 (duracao minima)
 │   ├── forms.py                #   formularios e validacao de entrada
 │   ├── views.py                #   uma funcao por tela/acao
 │   ├── urls.py                 #   enderecos do site
 │   ├── admin.py                #   painel /admin/ (colunas, filtros, titulo)
-│   ├── tests.py                #   36 testes automatizados
+│   ├── tests.py                #   44 testes automatizados
 │   └── management/commands/popular_dados.py   # dados de exemplo
 ├── templates/                  # HTML
 │   ├── base.html               #   esqueleto de toda pagina do site
@@ -119,7 +119,7 @@ Cliente 1 ----< Agendamento >---- 1 Servico
 | | `criado_em` | data/hora | automatico |
 | **Servico** | `nome` | texto (120) | obrigatorio |
 | | `descricao` | texto longo | opcional |
-| | `duracao_minutos` | inteiro positivo | padrao 30; base do calculo do fim |
+| | `duracao_minutos` | inteiro, minimo 1 | padrao 30; base do calculo do fim |
 | | `preco` | decimal (8,2) | obrigatorio |
 | | `ativo` | sim/nao | padrao sim; inativo some do formulario de novo agendamento |
 | | `criado_em` | data/hora | automatico |
@@ -136,7 +136,8 @@ Datas ficam no banco em **UTC** e sao mostradas no fuso `America/Sao_Paulo`
 (`USE_TZ = True`). Detalhes da regra de conflito: [AGENDAMENTO.md](AGENDAMENTO.md).
 
 **Migrations** (`agenda/migrations/`): `0001_initial` cria Cliente e Servico;
-`0002_agendamento` cria Agendamento. Sao arquivos gerados por `makemigrations` e
+`0002_agendamento` cria Agendamento; `0003_duracao_minima` aplica o minimo de 1
+minuto na duracao do servico. Sao arquivos gerados por `makemigrations` e
 **vao para o Git**: sem elas, quem clonar nao consegue criar o banco.
 
 ## 5. Como uma tela e montada
@@ -252,7 +253,7 @@ Em desenvolvimento esses avisos sao esperados e nao indicam erro.
 `get_or_create` e os agendamentos so sao criados se ainda nao existir nenhum (os
 horarios dependem do dia em que o comando roda).
 
-**`python manage.py test`** roda 36 testes, sempre em um banco temporario:
+**`python manage.py test`** roda 44 testes, sempre em um banco temporario:
 
 | Grupo | Testes | Cobre |
 |---|---|---|
@@ -260,7 +261,7 @@ horarios dependem do dia em que o comando roda).
 | `ServicoTests` | 3 | cadastro, edicao, texto da duracao |
 | `HomeTests` | 2 | contador e lista de proximos; cancelado nao conta |
 | `PopularDadosTests` | 1 | rodar duas vezes nao duplica |
-| `AgendamentoTests` | 23 | calculo do fim; conflito (sobreposto, igual, que engloba outro, encostado nos dois lados, cancelado, reativar, editar); formulario (passado, servico inativo, erro de conflito); filtros de data e situacao, inclusive invalidos; exclusao so por POST; protecao do historico (com o aviso em vermelho); botao Cancelar |
+| `AgendamentoTests` | 32 | calculo do fim; conflito (sobreposto, igual, que engloba outro, encostado nos dois lados, cancelado, reativar, editar); formulario (passado, servico inativo, erro de conflito); filtros de data e situacao, inclusive invalidos; exclusao so por POST; protecao do historico (com o aviso em vermelho); botao Cancelar; duracao minima e mudanca de duracao do servico; situacao so na edicao; ordem da lista |
 
 ## 11. Convencoes do projeto
 
@@ -296,8 +297,7 @@ garantem que nada muda por fora.
 
 - **Sem login**: qualquer pessoa com o endereco altera os dados (`login_required` e o passo natural).
 - **Um unico profissional**: um horario ocupado vale para toda a agenda.
-- **Duracao do servico alterada depois** nao atualiza o `fim` dos agendamentos futuros ja gravados.
-- **Preco negativo** e aceito pelo formulario de servico; duracao 0 tambem (a regra de conflito ainda protege o meio de um horario ocupado, mas nao as bordas).
+- **Preco negativo** e aceito pelo formulario de servico.
 - **Sem paginacao** nas listas.
 - A checagem de conflito e feita antes de gravar, **sem trava no banco**: dois envios no mesmo instante poderiam passar. Para um uso local isso nao importa; um sistema real precisaria de uma restricao no banco.
 - **Depende de internet** para Bootstrap e fontes.
