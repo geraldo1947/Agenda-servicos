@@ -19,4 +19,6 @@ urlpatterns = [
     path("agendamentos/novo/", views.agendamento_novo, name="agendamento_novo"),
     path("agendamentos/<int:pk>/editar/", views.agendamento_editar, name="agendamento_editar"),
     path("agendamentos/<int:pk>/excluir/", views.agendamento_excluir, name="agendamento_excluir"),
+
+    path("relatorios/", views.relatorios, name="relatorios"),
 ]

@@ -1,6 +1,10 @@
+import calendar
+from datetime import date, datetime, time, timedelta
+from decimal import Decimal
+
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.db.models import ProtectedError, Q
+from django.db.models import Count, ProtectedError, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -174,3 +178,86 @@ def agendamento_excluir(request, pk):
         messages.success(request, "Agendamento excluido.")
         return redirect("agendamento_lista")
     return render(request, "agenda/confirmar_exclusao.html", {"objeto": agendamento, "voltar": "agendamento_lista"})
+
+
+# --------------------------------------------------------------------------
+# Relatorios
+# --------------------------------------------------------------------------
+
+def _ler_data(texto):
+    """Converte 'AAAA-MM-DD' em date. Texto vazio ou invalido vira None."""
+    try:
+        return date.fromisoformat(texto)
+    except ValueError:
+        return None
+
+
+def relatorios(request):
+    """Resumo do periodo: quantidades, faturamento e rankings.
+
+    So agendamentos CONCLUIDOS contam como faturamento (o servico foi feito);
+    os AGENDADOS aparecem como "a receber" e os CANCELADOS ficam de fora.
+    """
+    hoje = timezone.localdate()
+    primeiro_do_mes = hoje.replace(day=1)
+    ultimo_do_mes = hoje.replace(day=calendar.monthrange(hoje.year, hoje.month)[1])
+
+    texto_inicio = request.GET.get("inicio", "").strip()
+    texto_fim = request.GET.get("fim", "").strip()
+    inicio = _ler_data(texto_inicio)
+    fim = _ler_data(texto_fim)
+
+    # Data digitada na mao na URL e invalida: avisa e volta para o mes atual.
+    if (texto_inicio and not inicio) or (texto_fim and not fim):
+        messages.warning(request, "Data invalida: mostrando o mes atual.")
+        inicio = fim = None
+    inicio = inicio or primeiro_do_mes
+    fim = fim or ultimo_do_mes
+    if fim < inicio:
+        messages.warning(request, "A data final e anterior a inicial: mostrando o mes atual.")
+        inicio, fim = primeiro_do_mes, ultimo_do_mes
+
+    # O dia final entra inteiro: o filtro vai ate a meia-noite do dia seguinte.
+    fuso = timezone.get_current_timezone()
+    comeco = timezone.make_aware(datetime.combine(inicio, time.min), fuso)
+    limite = timezone.make_aware(datetime.combine(fim + timedelta(days=1), time.min), fuso)
+    periodo = Agendamento.objects.filter(inicio__gte=comeco, inicio__lt=limite)
+
+    concluido = Q(status=Agendamento.Status.CONCLUIDO)
+    agendado = Q(status=Agendamento.Status.AGENDADO)
+    cancelado = Q(status=Agendamento.Status.CANCELADO)
+    resumo = periodo.aggregate(
+        total=Count("pk"),
+        concluidos=Count("pk", filter=concluido),
+        agendados=Count("pk", filter=agendado),
+        cancelados=Count("pk", filter=cancelado),
+        faturamento=Sum("servico__preco", filter=concluido),
+        a_receber=Sum("servico__preco", filter=agendado),
+    )
+    # Sum devolve None quando nao ha linhas; no relatorio isso e R$ 0,00.
+    resumo["faturamento"] = resumo["faturamento"] or Decimal("0")
+    resumo["a_receber"] = resumo["a_receber"] or Decimal("0")
+    resumo["taxa_cancelamento"] = round(100 * resumo["cancelados"] / resumo["total"]) if resumo["total"] else 0
+
+    # Rankings ignoram cancelados (nao aconteceram). Agrupa pelo id e nao pelo
+    # nome, para dois servicos com o mesmo nome nao virarem uma linha so.
+    validos = periodo.exclude(cancelado)
+    servicos_top = (
+        validos.values("servico_id", "servico__nome")
+        .annotate(quantidade=Count("pk"), faturamento=Sum("servico__preco", filter=concluido))
+        .order_by("-quantidade", "servico__nome")[:5]
+    )
+    clientes_top = (
+        validos.values("cliente_id", "cliente__nome")
+        .annotate(quantidade=Count("pk"), gasto=Sum("servico__preco", filter=concluido))
+        .order_by("-quantidade", "cliente__nome")[:5]
+    )
+
+    contexto = {
+        "inicio": inicio,
+        "fim": fim,
+        "resumo": resumo,
+        "servicos_top": servicos_top,
+        "clientes_top": clientes_top,
+    }
+    return render(request, "agenda/relatorios.html", contexto)
