@@ -442,3 +442,90 @@ class AgendamentoTests(TestCase):
         resposta = self.client.get(reverse("agendamento_lista"))
 
         self.assertEqual(list(resposta.context["agendamentos"]), [perto, longe, passado])
+
+
+class RelatorioTests(TestCase):
+    def setUp(self):
+        self.cliente = Cliente.objects.create(nome="Maria Silva", telefone="1111")
+        self.outro = Cliente.objects.create(nome="Joao Souza", telefone="2222")
+        self.corte = Servico.objects.create(nome="Corte", duracao_minutos=30, preco="50.00")
+        self.cor = Servico.objects.create(nome="Coloracao", duracao_minutos=60, preco="180.00")
+        # Meio-dia de hoje (no fuso local): sempre cai no mes atual.
+        self.base = timezone.localtime().replace(hour=12, minute=0, second=0, microsecond=0)
+
+    def _agenda(self, cliente, servico, horas, status):
+        return Agendamento.objects.create(
+            cliente=cliente, servico=servico, inicio=self.base + timedelta(hours=horas), status=status
+        )
+
+    def test_faturamento_soma_so_concluidos(self):
+        self._agenda(self.cliente, self.corte, 0, Agendamento.Status.CONCLUIDO)
+        self._agenda(self.cliente, self.cor, 2, Agendamento.Status.CONCLUIDO)
+        self._agenda(self.outro, self.corte, 4, Agendamento.Status.AGENDADO)
+        self._agenda(self.outro, self.cor, 6, Agendamento.Status.CANCELADO)
+
+        resposta = self.client.get(reverse("relatorios"), {"inicio": self.base.date(), "fim": self.base.date()})
+        resumo = resposta.context["resumo"]
+
+        self.assertEqual(resumo["faturamento"], 230)
+        self.assertEqual(resumo["a_receber"], 50)
+        self.assertEqual(resumo["total"], 4)
+        self.assertEqual(resumo["cancelados"], 1)
+        self.assertEqual(resumo["taxa_cancelamento"], 25)
+
+    def test_cancelados_ficam_fora_dos_rankings(self):
+        self._agenda(self.cliente, self.corte, 0, Agendamento.Status.CONCLUIDO)
+        self._agenda(self.outro, self.cor, 2, Agendamento.Status.CANCELADO)
+
+        resposta = self.client.get(reverse("relatorios"), {"inicio": self.base.date(), "fim": self.base.date()})
+
+        self.assertEqual([i["servico__nome"] for i in resposta.context["servicos_top"]], ["Corte"])
+        self.assertEqual([i["cliente__nome"] for i in resposta.context["clientes_top"]], ["Maria Silva"])
+
+    def test_ranking_ordena_por_quantidade(self):
+        self._agenda(self.outro, self.corte, 0, Agendamento.Status.CONCLUIDO)
+        self._agenda(self.cliente, self.corte, 1, Agendamento.Status.CONCLUIDO)
+        self._agenda(self.cliente, self.cor, 2, Agendamento.Status.CONCLUIDO)
+
+        resposta = self.client.get(reverse("relatorios"), {"inicio": self.base.date(), "fim": self.base.date()})
+
+        self.assertEqual(resposta.context["servicos_top"][0]["servico__nome"], "Corte")
+        self.assertEqual(resposta.context["clientes_top"][0]["cliente__nome"], "Maria Silva")
+
+    def test_periodo_exclui_agendamentos_de_fora(self):
+        self._agenda(self.cliente, self.corte, 0, Agendamento.Status.CONCLUIDO)
+        ontem = self.base.date() - timedelta(days=1)
+
+        resposta = self.client.get(reverse("relatorios"), {"inicio": ontem, "fim": ontem})
+
+        self.assertEqual(resposta.context["resumo"]["total"], 0)
+        self.assertContains(resposta, "Nenhum dado no periodo.")
+
+    def test_dia_final_entra_inteiro(self):
+        ag = Agendamento.objects.create(
+            cliente=self.cliente, servico=self.corte, status=Agendamento.Status.CONCLUIDO,
+            inicio=self.base.replace(hour=23, minute=0),
+        )
+
+        resposta = self.client.get(reverse("relatorios"), {"inicio": ag.inicio.date(), "fim": ag.inicio.date()})
+
+        self.assertEqual(resposta.context["resumo"]["total"], 1)
+
+    def test_data_invalida_nao_quebra_a_pagina(self):
+        resposta = self.client.get(reverse("relatorios"), {"inicio": "abc", "fim": "2026-13-45"})
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "Data invalida")
+
+    def test_fim_antes_do_inicio_volta_para_o_mes_atual(self):
+        resposta = self.client.get(reverse("relatorios"), {"inicio": "2026-05-10", "fim": "2026-05-01"})
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "anterior")
+
+    def test_pagina_sem_dados_mostra_zeros(self):
+        resposta = self.client.get(reverse("relatorios"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.context["resumo"]["faturamento"], 0)
+        self.assertContains(resposta, "R$ 0,00")
