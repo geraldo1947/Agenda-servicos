@@ -12,6 +12,9 @@ Funcionalidades:
   data e situacao. O sistema **bloqueia horarios em conflito**, calculando o fim
   de cada agendamento pela duracao do servico (detalhes em
   [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md)).
+- **Relatorios**: faturamento (so agendamentos concluidos), valor a receber,
+  taxa de cancelamento e rankings de servicos e clientes, por periodo
+  (detalhes em [`docs/RELATORIOS.md`](docs/RELATORIOS.md)).
 - **Painel inicial** com contadores e os proximos horarios.
 - **Painel `/admin/`** do Django, personalizado.
 
@@ -110,6 +113,7 @@ Agenda-servicos/
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Consulta: como o site funciona e como foi estruturado (pastas, enderecos, dados, telas, configuracoes, como acrescentar funcionalidades) |
 | [`docs/CADASTROS.md`](docs/CADASTROS.md) | A primeira funcionalidade: cadastro, busca, edicao e exclusao de clientes e servicos, validacoes e limites |
 | [`docs/AGENDAMENTO.md`](docs/AGENDAMENTO.md) | A funcionalidade de agendamento: telas, modelo de dados, regra de conflito, decisoes tecnicas e limites |
+| [`docs/RELATORIOS.md`](docs/RELATORIOS.md) | A terceira funcionalidade: relatorios e faturamento por periodo, regras, onde esta cada coisa e limites |
 | [`docs/EXPLICANDO-A-IMPLEMENTACAO.md`](docs/EXPLICANDO-A-IMPLEMENTACAO.md) | Como explicar o que foi implementado: roteiro, demonstracao e perguntas provaveis |
 | [`docs/INFORMACOES-VIDEO.md`](docs/INFORMACOES-VIDEO.md) | O que mostrar e citar no video (nao e roteiro), como gravar e publicar |
 | [`docs/ENTREGA.md`](docs/ENTREGA.md) | Branch, commits, tag, board e checklist final de entrega |

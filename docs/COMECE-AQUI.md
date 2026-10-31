@@ -9,8 +9,9 @@ Este e o indice da documentacao. Siga na ordem: cada etapa leva a proxima.
 | 3 | Consultar a estrutura (pastas, enderecos, dados, configuracoes) | [ARQUITETURA.md](ARQUITETURA.md) | 30 min |
 | 4 | Entender a primeira funcionalidade: cadastros de clientes e servicos | [CADASTROS.md](CADASTROS.md) | 20 min |
 | 5 | Entender a segunda funcionalidade: agendamento | [AGENDAMENTO.md](AGENDAMENTO.md) | 30 min |
-| 6 | Gravar o video | [INFORMACOES-VIDEO.md](INFORMACOES-VIDEO.md) | 1 h (com ensaio) |
-| 7 | Repositorio, board e entrega | [ENTREGA.md](ENTREGA.md) | 1 h |
+| 6 | Entender a terceira funcionalidade: relatorios e faturamento | [RELATORIOS.md](RELATORIOS.md) | 15 min |
+| 7 | Gravar o video | [INFORMACOES-VIDEO.md](INFORMACOES-VIDEO.md) | 1 h (com ensaio) |
+| 8 | Repositorio, board e entrega | [ENTREGA.md](ENTREGA.md) | 1 h |
 
 ## O projeto em um paragrafo
 

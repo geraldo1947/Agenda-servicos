@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block titulo %}Relatorios{% endblock %}
+
+{% block conteudo %}
+  <h1 class="h3 mb-1">Relatorios</h1>
+  <p class="text-muted mb-3">Faturamento e desempenho do periodo escolhido.</p>
+
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-sm-4 col-md-3">
+      <label class="form-label small text-muted mb-0" for="inicio">De</label>
+      <input type="date" id="inicio" name="inicio" value="{{ inicio|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-sm-4 col-md-3">
+      <label class="form-label small text-muted mb-0" for="fim">Ate</label>
+      <input type="date" id="fim" name="fim" value="{{ fim|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-auto d-flex align-items-end">
+      <button class="btn btn-outline-secondary">Filtrar</button>
+      <a href="{% url 'relatorios' %}" class="btn btn-link">Mes atual</a>
+    </div>
+  </form>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <p class="text-muted mb-1">Faturamento (concluidos)</p>
+          <p class="display-6 mb-0">R$ {{ resumo.faturamento|floatformat:2 }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <p class="text-muted mb-1">A receber (agendados)</p>
+          <p class="display-6 mb-0">R$ {{ resumo.a_receber|floatformat:2 }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <p class="text-muted mb-1">Taxa de cancelamento</p>
+          <p class="display-6 mb-0">{{ resumo.taxa_cancelamento }}%</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm"><div class="card-body">
+        <p class="text-muted mb-1">Total</p>
+        <p class="h3 mb-0">{{ resumo.total }}</p>
+      </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm"><div class="card-body">
+        <p class="text-muted mb-1">Concluidos</p>
+        <p class="h3 mb-0">{{ resumo.concluidos }}</p>
+      </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm"><div class="card-body">
+        <p class="text-muted mb-1">Agendados</p>
+        <p class="h3 mb-0">{{ resumo.agendados }}</p>
+      </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm"><div class="card-body">
+        <p class="text-muted mb-1">Cancelados</p>
+        <p class="h3 mb-0">{{ resumo.cancelados }}</p>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">Servicos mais pedidos</div>
+        <table class="table mb-0 align-middle">
+          <thead class="table-light">
+            <tr><th>Servico</th><th class="text-end">Qtd.</th><th class="text-end">Faturamento</th></tr>
+          </thead>
+          <tbody>
+            {% for item in servicos_top %}
+              <tr>
+                <td>{{ item.servico__nome }}</td>
+                <td class="text-end">{{ item.quantidade }}</td>
+                <td class="text-end">R$ {{ item.faturamento|default:0|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3" class="text-center text-muted py-4">Nenhum dado no periodo.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">Clientes mais frequentes</div>
+        <table class="table mb-0 align-middle">
+          <thead class="table-light">
+            <tr><th>Cliente</th><th class="text-end">Qtd.</th><th class="text-end">Total gasto</th></tr>
+          </thead>
+          <tbody>
+            {% for item in clientes_top %}
+              <tr>
+                <td>{{ item.cliente__nome }}</td>
+                <td class="text-end">{{ item.quantidade }}</td>
+                <td class="text-end">R$ {{ item.gasto|default:0|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3" class="text-center text-muted py-4">Nenhum dado no periodo.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
