@@ -529,3 +529,57 @@ class RelatorioTests(TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertEqual(resposta.context["resumo"]["faturamento"], 0)
         self.assertContains(resposta, "R$ 0,00")
+
+
+class HistoricoClienteTests(TestCase):
+    def setUp(self):
+        self.cliente = Cliente.objects.create(nome="Maria Silva", telefone="1111")
+        self.outro = Cliente.objects.create(nome="Joao Souza", telefone="2222")
+        self.corte = Servico.objects.create(nome="Corte", duracao_minutos=30, preco="50.00")
+        self.cor = Servico.objects.create(nome="Coloracao", duracao_minutos=60, preco="180.00")
+        self.base = timezone.localtime().replace(hour=12, minute=0, second=0, microsecond=0)
+
+    def _agenda(self, cliente, servico, dias, status):
+        return Agendamento.objects.create(
+            cliente=cliente, servico=servico, inicio=self.base + timedelta(days=dias), status=status
+        )
+
+    def test_total_gasto_soma_so_concluidos_do_cliente(self):
+        self._agenda(self.cliente, self.corte, -10, Agendamento.Status.CONCLUIDO)
+        self._agenda(self.cliente, self.cor, -5, Agendamento.Status.CONCLUIDO)
+        self._agenda(self.cliente, self.cor, -3, Agendamento.Status.CANCELADO)
+        self._agenda(self.outro, self.cor, -2, Agendamento.Status.CONCLUIDO)
+
+        resposta = self.client.get(reverse("cliente_historico", args=[self.cliente.pk]))
+        resumo = resposta.context["resumo"]
+
+        self.assertEqual(resumo["total_gasto"], 230)
+        self.assertEqual(resumo["concluidos"], 2)
+        self.assertEqual(resumo["cancelados"], 1)
+        self.assertEqual(resumo["total"], 3)
+        self.assertEqual(len(resposta.context["agendamentos"]), 3)
+
+    def test_ultimo_atendimento_e_proximo_horario(self):
+        self._agenda(self.cliente, self.corte, -10, Agendamento.Status.CONCLUIDO)
+        recente = self._agenda(self.cliente, self.corte, -2, Agendamento.Status.CONCLUIDO)
+        proximo = self._agenda(self.cliente, self.corte, 3, Agendamento.Status.AGENDADO)
+        self._agenda(self.cliente, self.corte, 9, Agendamento.Status.AGENDADO)
+
+        resumo = self.client.get(reverse("cliente_historico", args=[self.cliente.pk])).context["resumo"]
+
+        self.assertEqual(resumo["ultimo"], recente)
+        self.assertEqual(resumo["proximo"], proximo)
+
+    def test_cliente_sem_agendamentos(self):
+        resposta = self.client.get(reverse("cliente_historico", args=[self.cliente.pk]))
+
+        self.assertContains(resposta, "ainda nao tem agendamentos")
+        self.assertEqual(resposta.context["resumo"]["total_gasto"], 0)
+        self.assertIsNone(resposta.context["resumo"]["ultimo"])
+
+    def test_cliente_inexistente_da_404(self):
+        self.assertEqual(self.client.get(reverse("cliente_historico", args=[999])).status_code, 404)
+
+    def test_lista_de_clientes_tem_link_para_historico(self):
+        resposta = self.client.get(reverse("cliente_lista"))
+        self.assertContains(resposta, reverse("cliente_historico", args=[self.cliente.pk]))
