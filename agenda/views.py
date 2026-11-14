@@ -48,6 +48,31 @@ def cliente_novo(request):
     return render(request, "agenda/form.html", {"form": form, "voltar": "cliente_lista", "titulo": "Novo cliente"})
 
 
+def cliente_historico(request, pk):
+    """Historico do cliente: todos os agendamentos, total gasto e ultimo atendimento.
+
+    Total gasto conta so agendamentos CONCLUIDOS (mesma regra do faturamento).
+    """
+    cliente = get_object_or_404(Cliente, pk=pk)
+    agendamentos = cliente.agendamentos.select_related("servico").order_by("-inicio")
+    concluidos = agendamentos.filter(status=Agendamento.Status.CONCLUIDO)
+    resumo = {
+        "total": agendamentos.count(),
+        "concluidos": concluidos.count(),
+        "cancelados": agendamentos.filter(status=Agendamento.Status.CANCELADO).count(),
+        "total_gasto": concluidos.aggregate(t=Sum("servico__preco"))["t"] or Decimal("0"),
+        "ultimo": concluidos.first(),
+        "proximo": agendamentos.filter(
+            status=Agendamento.Status.AGENDADO, inicio__gte=timezone.now()
+        ).last(),
+    }
+    return render(
+        request,
+        "agenda/cliente_historico.html",
+        {"cliente": cliente, "agendamentos": agendamentos, "resumo": resumo},
+    )
+
+
 def cliente_editar(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     form = ClienteForm(request.POST or None, instance=cliente)

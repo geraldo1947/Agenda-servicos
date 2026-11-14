@@ -15,6 +15,8 @@ Funcionalidades:
 - **Relatorios**: faturamento (so agendamentos concluidos), valor a receber,
   taxa de cancelamento e rankings de servicos e clientes, por periodo
   (detalhes em [`docs/RELATORIOS.md`](docs/RELATORIOS.md)).
+- **Historico do cliente**: agendamentos, total gasto, ultimo atendimento e proximo
+  horario de cada cliente (detalhes em [`docs/HISTORICO-CLIENTE.md`](docs/HISTORICO-CLIENTE.md)).
 - **Painel inicial** com contadores e os proximos horarios.
 - **Painel `/admin/`** do Django, personalizado.
 
