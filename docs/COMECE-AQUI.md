@@ -10,7 +10,7 @@ Este e o indice da documentacao. Siga na ordem: cada etapa leva a proxima.
 | 4 | Entender a primeira funcionalidade: cadastros de clientes e servicos | [CADASTROS.md](CADASTROS.md) | 20 min |
 | 5 | Entender a segunda funcionalidade: agendamento | [AGENDAMENTO.md](AGENDAMENTO.md) | 30 min |
 | 6 | Entender a terceira funcionalidade: relatorios e faturamento | [RELATORIOS.md](RELATORIOS.md) | 15 min |
-| 7 | Entender a quarta funcionalidade: historico do cliente | [HISTORICO-CLIENTE.md](HISTORICO-CLIENTE.md) | 10 min |
+| 7 | Entender a quarta funcionalidade: historico do cliente | [HISTORICO-CLIENTE.md](HISTORICO-CLIENTE.md) e, para estudar a fundo, [ESTUDO-HISTORICO-CLIENTE.md](ESTUDO-HISTORICO-CLIENTE.md) | 30 min |
 | 8 | Gravar o video | [INFORMACOES-VIDEO.md](INFORMACOES-VIDEO.md) | 1 h (com ensaio) |
 | 9 | Repositorio, board e entrega | [ENTREGA.md](ENTREGA.md) | 1 h |
 

@@ -32,3 +32,6 @@ sistema: *quanto ele ja gastou? quando veio pela ultima vez? quando volta?*
 | View | `agenda/views.py` (`cliente_historico`) |
 | Template | `templates/agenda/cliente_historico.html` |
 | Testes | `agenda/tests.py` (`HistoricoClienteTests`) |
+
+Para estudar com calma, passo a passo e com exemplos, veja
+[ESTUDO-HISTORICO-CLIENTE.md](ESTUDO-HISTORICO-CLIENTE.md).
