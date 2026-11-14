@@ -34,6 +34,7 @@
             <td>{{ cliente.telefone }}</td>
             <td>{{ cliente.email|default:"-" }}</td>
             <td class="text-end">
+              <a href="{% url 'cliente_historico' cliente.pk %}" class="btn btn-sm btn-outline-primary">Historico</a>
               <a href="{% url 'cliente_editar' cliente.pk %}" class="btn btn-sm btn-outline-secondary">Editar</a>
               <a href="{% url 'cliente_excluir' cliente.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
             </td>
